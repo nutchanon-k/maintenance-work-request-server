@@ -1,0 +1,175 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Location {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  employees   Employee[]
+  departments Department[]
+  machines    Machine[]
+}
+
+model Employee {
+  id               Int               @id @default(autoincrement())
+  firstName        String            @map("first_name")
+  lastName         String            @map("last_name")
+  email            String            @unique @map("email")
+  password         String            @map("password")
+  picture          String?           @map("picture")
+  locationId       Int               @map("location_id")
+  location         Location          @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  departmentId     Int               @map("department_id")
+  department       Department        @relation(fields: [departmentId], references: [id])
+  role             Role
+  level            Level
+  isAvailable      Boolean           @default(true) @map("is_available")
+  maintenanceTasks MaintenanceTask[]
+  requestTasks     RequestTask[]
+}
+
+model Department {
+  id             Int            @id @default(autoincrement())
+  name           String         @map("name")
+  departmentType DepartmentType @map("department_type")
+  locationId     Int            @map("location_id")
+  location       Location       @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  employees      Employee[]
+  machines       Machine[]
+  requestTasks   RequestTask[]
+}
+
+model Machine {
+  id               Int               @id @default(autoincrement())
+  name             String            @map("name")
+  locationId       Int               @map("location_id")
+  location         Location          @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  departmentId     Int               @map("department_id")
+  department       Department        @relation(fields: [departmentId], references: [id])
+  machineTypeId    Int
+  machineType      MachineType       @relation(fields: [machineTypeId], references: [id], onDelete: Cascade)
+  requestTasks     RequestTask[]
+  maintenanceTasks MaintenanceTask[]
+}
+
+model RequestTask {
+  id               Int               @id @default(autoincrement())
+  employeeId       Int               @map("employee_id")
+  employee         Employee          @relation(fields: [employeeId], references: [id])
+  machineId        Int               @map("machine_id")
+  machine          Machine           @relation(fields: [machineId], references: [id])
+  faultSymptoms    String            @map("fault_symptoms")
+  departmentId     Int               @map("department_id")
+  department       Department        @relation(fields: [departmentId], references: [id])
+  requestTime      DateTime          @default(now()) @map("request_time")
+  updatedTime      DateTime          @updatedAt @map("updated_time")
+  status           RequestStatus     @default(inProgress)
+  maintenanceTasks MaintenanceTask[]
+  images           RequestImage[]
+  isAssigned       Boolean
+}
+
+model MaintenanceTask {
+  id                    Int                @id @default(autoincrement())
+  requestId             Int                @map("request_id")
+  request               RequestTask        @relation(fields: [requestId], references: [id])
+  machineId             Int                @map("machine_id")
+  machine               Machine            @relation(fields: [machineId], references: [id])
+  employeeId            Int                @map("employee_id")
+  employee              Employee           @relation(fields: [employeeId], references: [id])
+  typeOfFailureId       Int                @map("type_of_failure")
+  typeOfFailure         TypeOfFailure      @relation(fields: [typeOfFailureId], references: [id], onDelete: Cascade)
+  typeOfRootCauseId     Int                @map("type_of_root_cause")
+  typeOfRootCause       TypeOfRootCause    @relation(fields: [typeOfRootCauseId], references: [id], onDelete: Cascade)
+  rootCauseDetail       String?            @map("root_cause_detail")
+  operationDetails      String?            @map("operation_details")
+  preventingRecurrence  String?            @map("preventing_recurrence")
+  equipmentUsed         String?            @map("equipment_used")
+  additionalSuggestions String?            @map("additional_suggestions")
+  startTime             DateTime           @default(now()) @map("start_time")
+  finishTime            DateTime?          @map("finish_time")
+  acceptTime            DateTime?          @map("accept_time")
+  status                MaintenanceStatus  @default(backlog)
+  isRejected            Boolean            @map("is_rejected")
+  rejectReason          String?            @map("reject_reason")
+  images                MaintenanceImage[]
+}
+
+model RequestImage {
+  id        Int         @id @default(autoincrement())
+  url       String      @map("url")
+  requestId Int         @map("request_id")
+  request   RequestTask @relation(fields: [requestId], references: [id])
+}
+
+model MaintenanceImage {
+  id                Int             @id @default(autoincrement())
+  url               String          @map("url")
+  maintenanceTaskId Int             @map("maintenance_task_id")
+  maintenanceTask   MaintenanceTask @relation(fields: [maintenanceTaskId], references: [id])
+}
+
+model MachineType {
+  id               Int               @id @default(autoincrement())
+  details          String
+  machines         Machine[]
+  typeOfRootCauses TypeOfRootCause[]
+}
+
+model TypeOfFailure {
+  id               Int               @id @default(autoincrement())
+  details          String
+  typeOfRootCauses TypeOfRootCause[]
+  maintenanceTasks MaintenanceTask[]
+}
+
+model TypeOfRootCause {
+  id               Int               @id @default(autoincrement())
+  details          String
+  typeOfFailureId  Int
+  typeOfFailure    TypeOfFailure     @relation(fields: [typeOfFailureId], references: [id], onDelete: Cascade)
+  machineTypeId    Int
+  machineType      MachineType       @relation(fields: [machineTypeId], references: [id], onDelete: Cascade)
+  maintenanceTasks MaintenanceTask[]
+}
+
+enum Role {
+  admin
+  maintenance
+  requester
+}
+
+enum Level {
+  manager
+  leader
+  staff
+}
+
+enum DepartmentType {
+  Office
+  Production
+  Engineering
+}
+
+enum MaintenanceStatus {
+  backlog
+  inProgress 
+  inReview   
+  success
+}
+
+enum RequestStatus {
+  inProgress 
+  success
+}
