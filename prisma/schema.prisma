@@ -76,8 +76,8 @@ model RequestTask {
   updatedTime      DateTime          @updatedAt @map("updated_time")
   status           RequestStatus     @default(inProgress)
   maintenanceTasks MaintenanceTask[]
-  images           RequestImage[]
-  isAssigned       Boolean
+  images           String?
+  isAssigned       Boolean           @default(false)
 }
 
 model MaintenanceTask {
@@ -101,24 +101,24 @@ model MaintenanceTask {
   finishTime            DateTime?          @map("finish_time")
   acceptTime            DateTime?          @map("accept_time")
   status                MaintenanceStatus  @default(backlog)
-  isRejected            Boolean            @map("is_rejected")
+  isRejected            Boolean            @map("is_rejected")@default(false)
   rejectReason          String?            @map("reject_reason")
-  images                MaintenanceImage[]
+  images                String?
 }
 
-model RequestImage {
-  id        Int         @id @default(autoincrement())
-  url       String      @map("url")
-  requestId Int         @map("request_id")
-  request   RequestTask @relation(fields: [requestId], references: [id])
-}
+// model RequestImage {
+//   id        Int         @id @default(autoincrement())
+//   url       String      @map("url")
+//   requestId Int         @map("request_id")
+//   request   RequestTask @relation(fields: [requestId], references: [id])
+// }
 
-model MaintenanceImage {
-  id                Int             @id @default(autoincrement())
-  url               String          @map("url")
-  maintenanceTaskId Int             @map("maintenance_task_id")
-  maintenanceTask   MaintenanceTask @relation(fields: [maintenanceTaskId], references: [id])
-}
+// model MaintenanceImage {
+//   id                Int             @id @default(autoincrement())
+//   url               String          @map("url")
+//   maintenanceTaskId Int             @map("maintenance_task_id")
+//   maintenanceTask   MaintenanceTask @relation(fields: [maintenanceTaskId], references: [id])
+// }
 
 model MachineType {
   id               Int               @id @default(autoincrement())
