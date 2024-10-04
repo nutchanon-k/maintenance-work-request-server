@@ -6,6 +6,8 @@ const notFound = require("./middlewares/not-found");
 const authRoute = require("./routes/auth-route");
 const userRoute = require("./routes/user-route");
 const requestTaskRoute = require("./routes/request-task-route");
+const maintenanceTaskRoute = require("./routes/maintenance-task-route");
+const { authenticate } = require("./middlewares/authenticate");
 
 
 
@@ -15,9 +17,9 @@ app.use(express.json());
 app.use(cors());
 
 app.use('/auth',authRoute)
-app.use('/user', userRoute)
-app.use('/request-task', requestTaskRoute)
-
+app.use('/user',authenticate, userRoute)
+app.use('/request-task',authenticate, requestTaskRoute)
+app.use('/maintenance-task',authenticate, maintenanceTaskRoute)
 
 
 

@@ -25,7 +25,7 @@ CLOUDINARY_API_SECRET
 |post|/user/|y|y|-|admin|-|{firstName, lastName, email, password, confirmPassword, picture?, locationId, departmentId, role, level}
 |patch|/user/:userId|y|y|-|admin|-|{firstName, lastName, email, password, confirmPassword, picture?, locationId, departmentId, role, level}
 |delete|/user/:userId|y|y|-|admin|-|-|
-|get|/user/|y|-|y|-|manager, leader|-|
+|get|/user/assign-users|y|-|y|admin, maintenance|manager, leader|-|
 
 ## Request task path
 |method |path |authen | params | query | role | level | body |
@@ -40,9 +40,9 @@ CLOUDINARY_API_SECRET
 |method |path |authen | params | query | role | level | body |
 |:----- |:--- |:----:  |:------ |:----- |:---- |:---- |:---- |
 |get|/maintenance-task/|y|-|y|-|-|-|
-|post|/maintenance-task/|y|-|-|-|-|{requestId, machineId, employeeId, typeOfFailureId, typeOfRootCauseId, rootCauseDetail?, operationDetails?, preventingRecurrence? equipmentUsed?, additionalSuggestions?, images?}
-|patch|/maintenance-task/:maintenanceId|y|y|-|-|-|{requestId, machineId, employeeId, typeOfFailureId, typeOfRootCauseId, rootCauseDetail?, operationDetails?, preventingRecurrence? equipmentUsed?, additionalSuggestions?, finishTime?, acceptTime?, status, isRejected, images? }
-|delete|/maintenance-task/:maintenanceId|y|y|-|-|-|-|
+|post|/maintenance-task/|y|-|-|admin, maintenance|leader, manager|{requestId, machineId, employeeId, typeOfFailureId, typeOfRootCauseId, rootCauseDetail?, operationDetails?, preventingRecurrence? equipmentUsed?, additionalSuggestions?, images?}
+|patch|/maintenance-task/:maintenanceId|y|y|-|admin, maintenance, requester(for change status)|-|{requestId, machineId, employeeId, typeOfFailureId, typeOfRootCauseId, rootCauseDetail?, operationDetails?, preventingRecurrence? equipmentUsed?, additionalSuggestions?, finishTime?, acceptTime?, status, isRejected, images? }
+|delete|/maintenance-task/:maintenanceId|y|y|-|admin, maintenance|leader, manager|-|
 
 
 ## Note

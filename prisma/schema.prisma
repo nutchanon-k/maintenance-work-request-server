@@ -76,34 +76,34 @@ model RequestTask {
   updatedTime      DateTime          @updatedAt @map("updated_time")
   status           RequestStatus     @default(inProgress)
   maintenanceTasks MaintenanceTask[]
-  images           String?
+  image            String?
   isAssigned       Boolean           @default(false)
 }
 
 model MaintenanceTask {
-  id                    Int                @id @default(autoincrement())
-  requestId             Int                @map("request_id")
-  request               RequestTask        @relation(fields: [requestId], references: [id])
-  machineId             Int                @map("machine_id")
-  machine               Machine            @relation(fields: [machineId], references: [id])
-  employeeId            Int                @map("employee_id")
-  employee              Employee           @relation(fields: [employeeId], references: [id])
-  typeOfFailureId       Int                @map("type_of_failure")
-  typeOfFailure         TypeOfFailure      @relation(fields: [typeOfFailureId], references: [id], onDelete: Cascade)
-  typeOfRootCauseId     Int                @map("type_of_root_cause")
-  typeOfRootCause       TypeOfRootCause    @relation(fields: [typeOfRootCauseId], references: [id], onDelete: Cascade)
-  rootCauseDetail       String?            @map("root_cause_detail")
-  operationDetails      String?            @map("operation_details")
-  preventingRecurrence  String?            @map("preventing_recurrence")
-  equipmentUsed         String?            @map("equipment_used")
-  additionalSuggestions String?            @map("additional_suggestions")
-  startTime             DateTime           @default(now()) @map("start_time")
-  finishTime            DateTime?          @map("finish_time")
-  acceptTime            DateTime?          @map("accept_time")
-  status                MaintenanceStatus  @default(backlog)
-  isRejected            Boolean            @map("is_rejected")@default(false)
-  rejectReason          String?            @map("reject_reason")
-  images                String?
+  id                    Int               @id @default(autoincrement())
+  requestId             Int               @map("request_id")
+  requestTask           RequestTask       @relation(fields: [requestId], references: [id])
+  machineId             Int               @map("machine_id")
+  machine               Machine           @relation(fields: [machineId], references: [id])
+  employeeId            Int               @map("employee_id")
+  employee              Employee          @relation(fields: [employeeId], references: [id])
+  typeOfFailureId       Int               @map("type_of_failure")
+  typeOfFailure         TypeOfFailure     @relation(fields: [typeOfFailureId], references: [id], onDelete: Cascade)
+  typeOfRootCauseId     Int               @map("type_of_root_cause")
+  typeOfRootCause       TypeOfRootCause   @relation(fields: [typeOfRootCauseId], references: [id], onDelete: Cascade)
+  rootCauseDetail       String?           @map("root_cause_detail")
+  operationDetails      String?           @map("operation_details")
+  preventingRecurrence  String?           @map("preventing_recurrence")
+  equipmentUsed         String?           @map("equipment_used")
+  additionalSuggestions String?           @map("additional_suggestions")
+  startTime             DateTime          @default(now()) @map("start_time")
+  finishTime            DateTime?         @map("finish_time")
+  acceptTime            DateTime?         @map("accept_time")
+  status                MaintenanceStatus @default(backlog)
+  isRejected            Boolean           @default(false) @map("is_rejected")
+  rejectReason          String?           @map("reject_reason")
+  image                 String?
 }
 
 // model RequestImage {
@@ -164,12 +164,12 @@ enum DepartmentType {
 
 enum MaintenanceStatus {
   backlog
-  inProgress 
-  inReview   
+  inProgress
+  inReview
   success
 }
 
 enum RequestStatus {
-  inProgress 
+  inProgress
   success
 }
