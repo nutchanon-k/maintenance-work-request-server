@@ -1,6 +1,4 @@
-const prisma = require('../models/prisma')
-const { getRTask } = require('../service/request-task-service')
-const createError = require('../utils/create-error')
+const { getRTask, createRTask, updateRTask, deleteRTask } = require('../service/request-task-service')
 
 
 module.exports.getRequestTask = async (req, res, next) => {
@@ -18,23 +16,11 @@ module.exports.getRequestTask = async (req, res, next) => {
 module.exports.createRequestTask = async (req, res, next) => {
     try {
         const { employeeId, machineId, faultSymptoms, departmentId, image } = req.body
-
-        const requestTask = await prisma.requestTask.create({
-            data: {
-                employeeId: Number(employeeId),
-                machineId: Number(machineId),
-                faultSymptoms,
-                departmentId: Number(departmentId),
-                image
-            }
-        })
-
+        const requestTask = await createRTask(employeeId, machineId, faultSymptoms, departmentId, image)
         res.status(201).json({
             message: 'Create request task success',
             data: requestTask
         })
-
-
     } catch (err) {
         next(err)
     }
@@ -43,19 +29,7 @@ module.exports.updateRequestTask = async (req, res, next) => {
     try {
         const { requestId } = req.params
         const { employeeId, machineId, faultSymptoms, departmentId, image, status } = req.body
-        const requestTask = await prisma.requestTask.update({
-            where: {
-                id: Number(requestId)
-            },
-            data: {
-                employeeId: Number(employeeId),
-                machineId: Number(machineId),
-                faultSymptoms,
-                departmentId: Number(departmentId),
-                image,
-                status
-            }
-        })
+        const requestTask = await updateRTask(requestId, employeeId, machineId, faultSymptoms, departmentId, image, status)
         res.status(200).json({
             message: 'Update request task success',
             data: requestTask
@@ -67,13 +41,10 @@ module.exports.updateRequestTask = async (req, res, next) => {
 module.exports.deleteRequestTask = async (req, res, next) => {
     try {
         const { requestId } = req.params
-        const requestTask = await prisma.requestTask.delete({
-            where: {
-                id: Number(requestId)
-            }
-        })
+        const requestTask = await deleteRTask(requestId)
         res.status(200).json({
             message: 'Delete request task success',
+            data: requestTask
         })
     } catch (err) {
         next(err)

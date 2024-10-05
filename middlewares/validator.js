@@ -180,7 +180,11 @@ const updateUserSchema = Joi.object({
       'any.only': 'Level must be either manager, leader, or staff.',
       'string.empty': 'Level is required.',
     }),
-
+  isAvailable: Joi
+    .boolean()
+    .messages({
+      'any.required': 'isAvailable is required.',
+    }),
 })
 
 
@@ -293,7 +297,7 @@ const updateRequestTaskSchema = Joi.object({
     }),
   status: Joi
     .string()
-    .valid('inProgress ', 'success')
+    .valid('inProgress','success')
     .required()
     .messages({
       'any.only': 'Status must be either inProgress or success.',
@@ -495,7 +499,7 @@ const updateMaintenanceTaskSchema = Joi.object({
   }),
   status: Joi
   .string()
-  .valid('backlog', 'inProgress', 'inReview', 'completed', 'success')
+  .valid('backlog', 'inProgress', 'inReview', 'success')
   .optional()
   .messages({
     'any.only': 'Status must be one of the following: backlog, inProgress, inReview, success.'

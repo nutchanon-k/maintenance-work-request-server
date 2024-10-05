@@ -1,33 +1,11 @@
 const prisma = require('../models/prisma')
 const bcrypt = require('bcryptjs')
 const createError = require('../utils/create-error')
+const {  createUserService, getAllUsersService, getUserByEmail, updateUserService, deleteUserService } = require('../service/user-service')
 
 module.exports.getAllUsers = async (req, res, next) => {
     try {
-        const users = await prisma.employee.findMany({
-            select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-                picture: true,
-                locationId: true,
-                departmentId: true,
-                role: true,
-                level: true,
-                isAvailable: true,
-                location: {
-                    select: {
-                        name: true
-                    }
-                },
-                department: {
-                    select: {
-                        name: true
-                    }
-                }
-            }
-        })
+        const users = await getAllUsersService()
         res.status(200).json({data : users})
     } catch (err) {
         next(err)
@@ -49,12 +27,7 @@ module.exports.createUser = async (req, res, next) => {
         // console.log(req.body)
 
         //check user by email
-        const user = await prisma.employee.findUnique({
-            where: {
-                email: email
-            },
-
-        })
+        const user = await getUserByEmail(email)
         if (user) {
             return createError(400, 'email is already registered')
         }
@@ -63,19 +36,17 @@ module.exports.createUser = async (req, res, next) => {
         const hashedPassword = await bcrypt.hash(password, 10)
 
         //create user
-        const newUser = await prisma.employee.create({
-            data: {
-                firstName,
-                lastName,
-                email,
-                password: hashedPassword,
-                picture,
-                locationId: Number(locationId),
-                departmentId: Number(departmentId),
-                role,
-                level
-            }
-        })
+        const newUser = await  createUserService(
+            firstName,
+            lastName,
+            email,
+            hashedPassword,
+            picture,
+            locationId,
+            departmentId,
+            role,
+            level
+        ) 
 
         res.status(201).json({
             message: 'Create user success',
@@ -99,34 +70,33 @@ module.exports.updateUser = async (req, res, next) => {
             locationId,
             departmentId,
             role,
-            level
+            level,
+            isAvailable
         } = req.body
         const { userId } = req.params
 
         const hashedPassword = await bcrypt.hash(password, 10)
 
         //update user
-        const user = await prisma.employee.update({
-            where: {
-                id: Number(userId)
-            },
-            data: {
-                firstName,
-                lastName,
-                email,
-                password: hashedPassword,
-                picture,
-                locationId: Number(locationId),
-                departmentId: Number(departmentId),
-                role,
-                level
-            }
-        })
+        const user = await updateUserService(
+            firstName,
+            lastName,
+            email,
+            hashedPassword,
+            picture,
+            locationId,
+            departmentId,
+            role,
+            level,
+            Number(userId),
+            isAvailable
+        )
         if (!user) {
             return createError(404, 'User not found')
         }
         res.status(200).json({
             message: 'Update user success',
+            data :user
         })
     } catch (err) {
         next(err)
@@ -135,11 +105,7 @@ module.exports.updateUser = async (req, res, next) => {
 module.exports.deleteUser = async (req, res, next) => {
     try {
         const { userId } = req.params
-        const user = await prisma.employee.delete({
-            where: {
-                id: Number(userId)
-            }
-        })
+        const user = await deleteUserService(Number(userId))
         if (!user) {
             return createError(404, 'User not found')
         }
@@ -190,7 +156,7 @@ module.exports.getUsersForAssign = async (req, res, next) => {
                 }
             }
         })
-        res.status(200).json({data :users})
+        res.status(200).json({data : users})
     } catch (err) {
         next(err)
     }

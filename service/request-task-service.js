@@ -1,7 +1,7 @@
 const prisma = require('../models/prisma')
 
 
-module.exports.getRTask = (employeeId, machineId, departmentId, status, requestTime)=>{
+module.exports.getRTask = (employeeId, machineId, departmentId, status, requestTime) => {
     const query = {
         where: {},
         include: {
@@ -20,7 +20,7 @@ module.exports.getRTask = (employeeId, machineId, departmentId, status, requestT
                     location: true
                 },
             },
-            department: true    
+            department: true
         }
     };
 
@@ -44,4 +44,37 @@ module.exports.getRTask = (employeeId, machineId, departmentId, status, requestT
 
     return prisma.requestTask.findMany(query)
 
+}
+module.exports.createRTask = (employeeId, machineId, faultSymptoms, departmentId, image) => {
+    return prisma.requestTask.create({
+        data: {
+            employeeId: Number(employeeId),
+            machineId: Number(machineId),
+            faultSymptoms,
+            departmentId: Number(departmentId),
+            image
+        }
+    })
+}
+module.exports.updateRTask = (requestId, employeeId, machineId, faultSymptoms, departmentId, image, status) => {
+    return prisma.requestTask.update({
+        where: {
+            id: Number(requestId)
+        },
+        data: {
+            employeeId: Number(employeeId),
+            machineId: Number(machineId),
+            faultSymptoms,
+            departmentId: Number(departmentId),
+            image,
+            status
+        }
+    })
+}
+module.exports.deleteRTask = (requestId) => {
+    return prisma.requestTask.delete({
+        where: {
+            id: Number(requestId)
+        }
+    })
 }
