@@ -10,7 +10,6 @@ const maintenanceTaskRoute = require("./routes/maintenance-task-route");
 const { authenticate } = require("./middlewares/authenticate");
 
 
-
 const app = express();
 
 app.use(express.json());
@@ -20,13 +19,8 @@ app.use('/auth',authRoute)
 app.use('/user',authenticate, userRoute)
 app.use('/request-task',authenticate, requestTaskRoute)
 app.use('/maintenance-task',authenticate, maintenanceTaskRoute)
-
-
-
 app.use(errorMiddleware)
 app.use('*', notFound)
-
-
 
 
 const port = process.env.PORT

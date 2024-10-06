@@ -35,6 +35,24 @@ module.exports.getUserByEmail = (email) => {
     })
 
 }
+module.exports.getUserById = (id) => {
+    return prisma.employee.findFirst({
+        where: {
+            id: id
+        },
+        select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            picture: true,
+            locationId: true,
+            departmentId: true,
+            role: true,
+            level: true
+        }
+    })
+}
 module.exports.createUserService = (
     firstName,
     lastName,

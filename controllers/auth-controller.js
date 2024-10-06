@@ -1,22 +1,16 @@
-const prisma = require('../models/prisma')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const createError = require('../utils/create-error')
-
+const { getUserByEmail, getUserById } = require('../service/user-service')
 
 
 module.exports.login = async(req, res, next) => {
     try{
         const { email, password } = req.body
-        console.log(req.body)
+
         
         //check user by email
-        const user = await prisma.employee.findUnique({
-            where: {
-                email: email
-            },
-       
-        })
+        const user = await getUserByEmail(email)
         if (!user) {
             return createError(400, 'email is not registered')
         }
@@ -42,25 +36,10 @@ module.exports.login = async(req, res, next) => {
         next(err)
     }
 }
-
 exports.currentUser = async (req, res, next) => {
     try {
-        const user = await prisma.employee.findUnique({
-            where: {
-                id: req.user.id
-            },
-            select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-                picture: true,
-                locationId: true,
-                departmentId: true,
-                role: true,
-                level: true
-            }
-        })
+        const { id } = req.user
+        const user = await getUserById(id)
         res.json(user)
     } catch (err) {
         next(err)
