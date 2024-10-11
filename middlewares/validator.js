@@ -290,7 +290,7 @@ const updateRequestTaskSchema = Joi.object({
   image: Joi
     .string()
     .uri()
-    .allow('')
+    .allow('',null)
     .messages({
       'string.base': 'Image must be a string',
       'string.uri': 'Image must be a valid URL'

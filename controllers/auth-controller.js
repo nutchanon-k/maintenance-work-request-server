@@ -7,6 +7,7 @@ const { getUserByEmail, getUserById } = require('../service/user-service')
 module.exports.login = async(req, res, next) => {
     try{
         const { email, password } = req.body
+        // console.log(req.body)
 
         
         //check user by email
@@ -29,7 +30,15 @@ module.exports.login = async(req, res, next) => {
         //send token
         res.status(200).json({
             message: 'login success',
-            token
+            token,
+            user:{
+                id: user.id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                role : user.role,
+                level : user.level
+            }
         })
       
     }catch(err){
