@@ -31,7 +31,7 @@ model Employee {
   locationId       Int               @map("location_id")
   location         Location          @relation(fields: [locationId], references: [id], onDelete: Cascade)
   departmentId     Int               @map("department_id")
-  department       Department        @relation(fields: [departmentId], references: [id])
+  department       Department        @relation(fields: [departmentId], references: [id], onDelete: Cascade)
   role             Role
   level            Level
   isAvailable      Boolean           @default(true) @map("is_available")
@@ -56,7 +56,7 @@ model Machine {
   locationId       Int               @map("location_id")
   location         Location          @relation(fields: [locationId], references: [id], onDelete: Cascade)
   departmentId     Int               @map("department_id")
-  department       Department        @relation(fields: [departmentId], references: [id])
+  department       Department        @relation(fields: [departmentId], references: [id], onDelete: Cascade)
   machineTypeId    Int
   machineType      MachineType       @relation(fields: [machineTypeId], references: [id], onDelete: Cascade)
   requestTasks     RequestTask[]
@@ -66,12 +66,12 @@ model Machine {
 model RequestTask {
   id               Int               @id @default(autoincrement())
   employeeId       Int               @map("employee_id")
-  employee         Employee          @relation(fields: [employeeId], references: [id])
+  employee         Employee          @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   machineId        Int               @map("machine_id")
-  machine          Machine           @relation(fields: [machineId], references: [id])
+  machine          Machine           @relation(fields: [machineId], references: [id], onDelete: Cascade)
   faultSymptoms    String            @map("fault_symptoms")
   departmentId     Int               @map("department_id")
-  department       Department        @relation(fields: [departmentId], references: [id])
+  department       Department        @relation(fields: [departmentId], references: [id], onDelete: Cascade)
   requestTime      DateTime          @default(now()) @map("request_time")
   updatedTime      DateTime          @updatedAt @map("updated_time")
   status           RequestStatus     @default(inProgress)
@@ -83,15 +83,15 @@ model RequestTask {
 model MaintenanceTask {
   id                    Int               @id @default(autoincrement())
   requestId             Int               @map("request_id")
-  requestTask           RequestTask       @relation(fields: [requestId], references: [id])
+  requestTask           RequestTask       @relation(fields: [requestId], references: [id], onDelete: Cascade)
   machineId             Int               @map("machine_id")
-  machine               Machine           @relation(fields: [machineId], references: [id])
+  machine               Machine           @relation(fields: [machineId], references: [id], onDelete: Cascade)
   employeeId            Int               @map("employee_id")
-  employee              Employee          @relation(fields: [employeeId], references: [id])
+  employee              Employee          @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   typeOfFailureId       Int               @map("type_of_failure")
   typeOfFailure         TypeOfFailure     @relation(fields: [typeOfFailureId], references: [id], onDelete: Cascade)
   typeOfRootCauseId     Int?              @map("type_of_root_cause")
-  typeOfRootCause       TypeOfRootCause?   @relation(fields: [typeOfRootCauseId], references: [id], onDelete: Cascade)
+  typeOfRootCause       TypeOfRootCause?  @relation(fields: [typeOfRootCauseId], references: [id], onDelete: Cascade)
   rootCauseDetail       String?           @map("root_cause_detail")
   operationDetails      String?           @map("operation_details")
   preventingRecurrence  String?           @map("preventing_recurrence")
@@ -104,6 +104,7 @@ model MaintenanceTask {
   isRejected            Boolean           @default(false) @map("is_rejected")
   rejectReason          String?           @map("reject_reason")
   image                 String?
+  note                  String?           
 }
 
 // model RequestImage {

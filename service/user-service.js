@@ -20,7 +20,8 @@ module.exports.getAllUsersService = () => {
             },
             department: {
                 select: {
-                    name: true
+                    name: true,
+                    departmentType : true
                 }
             }
         }
@@ -31,7 +32,8 @@ module.exports.getUserByEmail = (email) => {
         where: {
             email: email
         },
-
+        
+        
     })
 
 }
@@ -49,64 +51,31 @@ module.exports.getUserById = (id) => {
             locationId: true,
             departmentId: true,
             role: true,
-            level: true
+            level: true,
+            isAvailable: true,
+            location: {
+                select: {
+                    name: true
+                }
+            },
+            department: {
+                select: {
+                    name: true,
+                    departmentType : true
+                }
+            }
         }
     })
 }
-module.exports.createUserService = (
-    firstName,
-    lastName,
-    email,
-    hashedPassword,
-    picture,
-    locationId,
-    departmentId,
-    role,
-    level
-) => {
-    return prisma.employee.create({
-        data: {
-            firstName,
-            lastName,
-            email,
-            password: hashedPassword,
-            picture,
-            locationId: Number(locationId),
-            departmentId: Number(departmentId),
-            role,
-            level
-        }
-    })
+module.exports.createUserService = (data) => {
+    return prisma.employee.create({data:data})
 }
-module.exports.updateUserService = (
-    firstName,
-    lastName,
-    email,
-    hashedPassword,
-    picture,
-    locationId,
-    departmentId,
-    role,
-    level,
-    userId,
-    isAvailable
-) => {
+module.exports.updateUserService = (userId,cleanFieldsToUpdate) => {
     return prisma.employee.update({
         where: {
             id: Number(userId)
         },
-        data: {
-            firstName,
-            lastName,
-            email,
-            password: hashedPassword,
-            picture,
-            locationId: Number(locationId),
-            departmentId: Number(departmentId),
-            role,
-            level,
-            isAvailable
-        }
+        data: cleanFieldsToUpdate
     })
 }
 module.exports.deleteUserService = (userId) => {

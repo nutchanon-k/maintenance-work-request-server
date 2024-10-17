@@ -304,7 +304,27 @@ const updateRequestTaskSchema = Joi.object({
       'string.empty': 'Status is required.',
     }),
 
+
+
 });
+const updateIsAssignSchema = Joi.object({
+  isAssigned : Joi
+    .boolean()
+    .required()
+    .messages({
+      'any.required': 'isAssigned is required.',
+    }),
+})
+const updateRequestTaskStatusSchema = Joi.object({
+  status: Joi
+    .string()
+    .valid('inProgress','success')
+    .required()
+    .messages({
+      'any.only': 'Status must be either inProgress or success.',
+      'string.empty': 'Status is required.',
+    }),
+})
 
 
 //Maintenance Task validator
@@ -348,7 +368,7 @@ const createMaintenanceTaskSchema = Joi.object({
   typeOfRootCauseId: Joi
     .number()
     .integer()
-    .required()
+    .optional()
     .messages({
       'any.required': 'Type of Root Cause ID is required.',
       'number.base': 'Type of Root Cause ID must be a number.',
@@ -397,12 +417,19 @@ const createMaintenanceTaskSchema = Joi.object({
   .messages({
     'string.uri': 'Picture must be a valid URL.',
   }),
+  note: Joi
+  .string()
+  .allow(null, '')
+  .optional()
+  .messages({
+    'string.base': 'Note must be a string.'
+  }),
 });
 const updateMaintenanceTaskSchema = Joi.object({
   requestId: Joi
     .number()
     .integer()
-    .required()
+    .optional()
     .messages({
       'any.required': 'Request ID is required.',
       'number.base': 'Request ID must be a number.',
@@ -411,7 +438,7 @@ const updateMaintenanceTaskSchema = Joi.object({
   machineId: Joi
     .number()
     .integer()
-    .required()
+    .optional()
     .messages({
       'any.required': 'Machine ID is required.',
       'number.base': 'Machine ID must be a number.',
@@ -420,7 +447,7 @@ const updateMaintenanceTaskSchema = Joi.object({
   employeeId: Joi
     .number()
     .integer()
-    .required()
+    .optional()
     .messages({
       'any.required': 'Employee ID is required.',
       'number.base': 'Employee ID must be a number.',
@@ -429,7 +456,7 @@ const updateMaintenanceTaskSchema = Joi.object({
   typeOfFailureId: Joi
     .number()
     .integer()
-    .required()
+    .optional()
     .messages({
       'any.required': 'Type of Failure ID is required.',
       'number.base': 'Type of Failure ID must be a number.',
@@ -438,7 +465,7 @@ const updateMaintenanceTaskSchema = Joi.object({
   typeOfRootCauseId: Joi
     .number()
     .integer()
-    .required()
+    .optional()
     .messages({
       'any.required': 'Type of Root Cause ID is required.',
       'number.base': 'Type of Root Cause ID must be a number.',
@@ -525,6 +552,13 @@ const updateMaintenanceTaskSchema = Joi.object({
   .messages({
     'string.uri': 'Picture must be a valid URL.',
   }),
+  note: Joi
+  .string()
+  .allow(null, '')
+  .optional()
+  .messages({
+    'string.base': 'Note must be a string.'
+  }),
 });
 
 
@@ -535,6 +569,7 @@ const validateSchema = (schema) => (req, res, next) => {
   const { value, error } = schema.validate(req.body)
 
   if (error) {
+    console.log(req.body)
     return createError(400, error.details[0].message)
   }
   req.input = value
@@ -552,3 +587,5 @@ module.exports.createRequestTaskValidator = validateSchema(createRequestTaskSche
 module.exports.updateRequestTaskValidator = validateSchema(updateRequestTaskSchema)
 module.exports.createMaintenanceTaskValidator = validateSchema(createMaintenanceTaskSchema)
 module.exports.updateMaintenanceTaskValidator = validateSchema(updateMaintenanceTaskSchema)
+module.exports.updateIsAssignValidator = validateSchema(updateIsAssignSchema)
+module.exports.updateRequestTaskStatusValidator = validateSchema(updateRequestTaskStatusSchema)

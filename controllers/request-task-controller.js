@@ -1,4 +1,4 @@
-const { getRTask, createRTask, updateRTask, deleteRTask, findMachine, getRTaskById } = require('../service/request-task-service')
+const { getRTask, createRTask, updateRTask, deleteRTask, findMachine, getRTaskById, updateRTaskIsAssigned, updateStatusService } = require('../service/request-task-service')
 const prisma = require('../models/prisma')
 const path = require('path')
 const fs = require('fs/promises')
@@ -86,7 +86,8 @@ module.exports.updateRequestTask = async (req, res, next) => {
                 faultSymptoms: faultSymptoms,
                 departmentId: Number(departmentId),
                 image: uploadResult.secure_url || '',
-                status : status || ''
+                status : status || '',
+                
             }
             :
             {
@@ -94,7 +95,8 @@ module.exports.updateRequestTask = async (req, res, next) => {
                 machineId: Number(machineId),
                 faultSymptoms: faultSymptoms,
                 departmentId: Number(departmentId),
-                status : status || ''
+                status : status || '',
+               
             }
 
         const requestTask = await updateRTask(requestId, data)
@@ -109,6 +111,12 @@ module.exports.updateRequestTask = async (req, res, next) => {
 module.exports.deleteRequestTask = async (req, res, next) => {
     try {
         const { requestId } = req.params
+
+        const checkRequestTask = await getRTaskById(requestId)
+        if (!checkRequestTask) {
+            return createError(404, 'Request task not found')
+        }
+
         const requestTask = await deleteRTask(requestId)
         res.status(200).json({
             message: 'Delete request task success',
@@ -137,6 +145,44 @@ module.exports.getMachine = async (req, res, next) => {
         res.status(200).json({
             message: 'Get data machine success',
             data: machines
+        })
+    } catch (err) {
+        next(err)
+    }
+}
+module.exports.updateRequestTaskIsAssign = async (req, res, next) => {
+    try {
+        const { requestId } = req.params
+        const { isAssigned } = req.body
+
+        const checkRequestTask = await getRTaskById(requestId)
+        if (!checkRequestTask) {
+            return createError(404, 'Request task not found')
+        }
+        const requestTask = await updateRTaskIsAssigned(requestId,isAssigned)
+        res.status(200).json({
+            message: 'Update isAssigned in request task success',
+            data: requestTask
+        })
+    } catch (err) {
+        next(err)
+    }
+}
+
+module.exports.updateRequestStatus = async (req, res, next) => {
+    try {
+        const { requestId } = req.params
+        const { status } = req.body
+        
+        const checkRequestTask = await getRTaskById(requestId)
+        if(!checkRequestTask){
+            return createError(404, 'Request task not found')
+        }
+
+        const requestTask = await updateStatusService(requestId,status)
+        res.status(200).json({
+            message: 'Update status in request task success',
+            data: requestTask
         })
     } catch (err) {
         next(err)

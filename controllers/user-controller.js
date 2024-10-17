@@ -1,12 +1,17 @@
 const prisma = require('../models/prisma')
 const bcrypt = require('bcryptjs')
 const createError = require('../utils/create-error')
-const {  createUserService, getAllUsersService, getUserByEmail, updateUserService, deleteUserService } = require('../service/user-service')
+const { createUserService, getAllUsersService, getUserByEmail, updateUserService, deleteUserService, getUserById } = require('../service/user-service')
+const path = require('path')
+const fs = require('fs/promises')
+const cloudinary = require('../config/cloudinary')
+const getPublicId = require('../utils/getPublicId')
+
 
 module.exports.getAllUsers = async (req, res, next) => {
     try {
         const users = await getAllUsersService()
-        res.status(200).json({data : users})
+        res.status(200).json({ data: users })
     } catch (err) {
         next(err)
     }
@@ -18,13 +23,17 @@ module.exports.createUser = async (req, res, next) => {
             lastName,
             email,
             password,
-            picture,
+            confirmPassword,
             locationId,
             departmentId,
             role,
             level
         } = req.body
+        console.log(req.body)
         // console.log(req.body)
+        if (password !== confirmPassword) {
+            return createError(400, 'password is not match')
+        }
 
         //check user by email
         const user = await getUserByEmail(email)
@@ -35,18 +44,32 @@ module.exports.createUser = async (req, res, next) => {
         //hash password
         const hashedPassword = await bcrypt.hash(password, 10)
 
-        //create user
-        const newUser = await  createUserService(
+        const haveFile = !!req.file
+        let uploadResult = {}
+        if (haveFile) {
+            uploadResult = await cloudinary.uploader.upload(req.file.path, {
+                overwrite: true,
+                public_id: path.parse(req.file.path).name
+                // public_id : req.file.filename
+            })
+            fs.unlink(req.file.path)
+        }
+
+        const data = {
             firstName,
             lastName,
             email,
-            hashedPassword,
-            picture,
-            locationId,
-            departmentId,
+            password: hashedPassword,
+            picture: haveFile ? uploadResult.secure_url : '',
+            locationId: Number(locationId),
+            departmentId: Number(departmentId),
             role,
             level
-        ) 
+        }
+
+
+        //create user
+        const newUser = await createUserService(data)
 
         res.status(201).json({
             message: 'Create user success',
@@ -61,42 +84,70 @@ module.exports.createUser = async (req, res, next) => {
 }
 module.exports.updateUser = async (req, res, next) => {
     try {
+        const { userId } = req.params
         const {
             firstName,
             lastName,
             email,
             password,
-            picture,
             locationId,
             departmentId,
             role,
             level,
             isAvailable
         } = req.body
-        const { userId } = req.params
 
-        const hashedPassword = await bcrypt.hash(password, 10)
+        const checkUser = await getUserById(Number(userId))
+        if (!checkUser) {
+            return createError(404, 'User not found')
+        }
 
-        //update user
-        const user = await updateUserService(
+        //hash password
+
+
+        const fieldsToUpdate = {
             firstName,
             lastName,
             email,
-            hashedPassword,
-            picture,
-            locationId,
-            departmentId,
+            locationId: locationId ? Number(locationId) : undefined,
+            departmentId: departmentId ? Number(departmentId) : undefined,
             role,
-            level,
-            Number(userId),
-            isAvailable
-        )
+            level
+        }
+
+        const cleanFieldsToUpdate = Object.fromEntries(
+            Object.entries(fieldsToUpdate).filter(([key, value]) => value !== undefined)
+        );
+
+        if (password) {
+            const hashedPassword = await bcrypt.hash(password, 10)
+            cleanFieldsToUpdate.password = hashedPassword
+        }
+
+        const haveFile = !!req.file
+        let uploadResult = {}
+        if (haveFile) {
+            uploadResult = await cloudinary.uploader.upload(req.file.path, {
+                public_id: path.parse(req.file.path).name
+            })
+            fs.unlink(req.file.path)
+            console.log(checkUser)
+            if (checkUser.image) {
+                cloudinary.uploader.destroy(getPublicId(checkUser.image))
+            }
+            cleanFieldsToUpdate.picture = uploadResult.secure_url || ''
+        }
+
+
+        //update user
+        const user = await updateUserService(Number(userId), cleanFieldsToUpdate)
+
         if (!user) {
             return createError(404, 'User not found')
         }
         res.status(200).json({
             message: 'Update user success',
-            data :user
+            data: user
         })
     } catch (err) {
         next(err)
@@ -105,10 +156,12 @@ module.exports.updateUser = async (req, res, next) => {
 module.exports.deleteUser = async (req, res, next) => {
     try {
         const { userId } = req.params
-        const user = await deleteUserService(Number(userId))
-        if (!user) {
+        const checkUser = await getUserById(Number(userId))
+        if (!checkUser) {
             return createError(404, 'User not found')
         }
+        const user = await deleteUserService(Number(userId))
+
         res.status(200).json({
             message: 'Delete user success',
         })
@@ -156,7 +209,44 @@ module.exports.getUsersForAssign = async (req, res, next) => {
                 }
             }
         })
-        res.status(200).json({data : users})
+        res.status(200).json({ data: users })
+    } catch (err) {
+        next(err)
+    }
+}
+module.exports.getLocationDepartmentData = async (req, res, next) => {
+    try {
+        const locations = await prisma.location.findMany({
+            select: {
+                id: true,
+                name: true
+            }
+        })
+        const departments = await prisma.department.findMany({
+            select: {
+                id: true,
+                name: true,
+                departmentType: true,
+                locationId: true,
+                location: {
+                    select: {
+                        name: true
+                    }
+                }
+            }
+        })
+        res.status(200).json({ locations, departments })
+    } catch (err) {
+        next(err)
+    }
+
+}
+
+module.exports.getUserId = async (req, res, next) => {
+    try {
+        const { userId } = req.params
+        const user = await getUserById(Number(userId))
+        res.status(200).json({ data: user })
     } catch (err) {
         next(err)
     }

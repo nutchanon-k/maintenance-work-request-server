@@ -5,6 +5,7 @@ const createError = require('../utils/create-error')
 
 module.exports.checkRoleAdmin = async (req, res, next) => {
     try {
+        console.log("body",req.body)
         const checkAdmin = await prisma.employee.findUnique({
             where: {
                 id: req.user.id

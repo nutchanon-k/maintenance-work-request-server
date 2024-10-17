@@ -2,12 +2,13 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const createError = require('../utils/create-error')
 const { getUserByEmail, getUserById } = require('../service/user-service')
+const { picture } = require('../config/cloudinary')
 
 
 module.exports.login = async(req, res, next) => {
     try{
         const { email, password } = req.body
-        // console.log(req.body)
+        console.log(req.body)
 
         
         //check user by email
@@ -15,6 +16,7 @@ module.exports.login = async(req, res, next) => {
         if (!user) {
             return createError(400, 'email is not registered')
         }
+        console.log(user)
 
         //compare password
         const passwordIsMatch = await bcrypt.compare(password, user.password)
@@ -37,7 +39,8 @@ module.exports.login = async(req, res, next) => {
                 lastName: user.lastName,
                 email: user.email,
                 role : user.role,
-                level : user.level
+                level : user.level,
+                picture : user.picture
             }
         })
       

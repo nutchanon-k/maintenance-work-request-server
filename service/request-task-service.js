@@ -72,7 +72,7 @@ module.exports.updateRTask = (requestId, {employeeId, machineId, faultSymptoms, 
             faultSymptoms,
             departmentId: Number(departmentId),
             image,
-            status
+            status,
         }
     })
 }
@@ -127,4 +127,26 @@ module.exports.findMachine = (machineId) => {
     };
     return prisma.machine.findFirst(query)
 
+}
+
+module.exports.updateRTaskIsAssigned = (requestId, isAssigned) => {
+    return prisma.requestTask.update({
+        where: {
+            id: Number(requestId)
+        },
+        data: {
+            isAssigned
+        }
+    })
+}
+
+module.exports.updateStatusService = (requestId, status) => {
+    return prisma.requestTask.update({
+        where: {
+            id: Number(requestId)
+        },
+        data: {
+            status
+        }
+    })
 }

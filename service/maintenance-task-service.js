@@ -1,6 +1,6 @@
 const prisma = require('../models/prisma')
 
-module.exports.getListMaintenanceTask = (requestId, employeeId, machineId) => {
+module.exports.getListMaintenanceTask = (requestId, id, employeeId, machineId, status) => {
     const query = {
         where: {},
         select: {
@@ -22,6 +22,12 @@ module.exports.getListMaintenanceTask = (requestId, employeeId, machineId) => {
                                 select: {
                                     name: true
                                 }
+                            },
+                            machineTypeId: true,
+                            machineType: {
+                                select: {
+                                    details: true
+                                }
                             }
                         }
                     },
@@ -32,6 +38,7 @@ module.exports.getListMaintenanceTask = (requestId, employeeId, machineId) => {
                         }
                     },
                     requestTime: true,
+                    updatedTime : true,
                     status: true,
                     image: true,
                     isAssigned: true
@@ -68,16 +75,25 @@ module.exports.getListMaintenanceTask = (requestId, employeeId, machineId) => {
             acceptTime: true,
             status: true,
             image: true,
+            note: true,
+            isRejected : true,
+            rejectReason : true
         }
     }
     if (requestId) {
         query.where.requestId = Number(requestId);
+    }
+    if (id) {
+        query.where.id = Number(id);
     }
     if (employeeId) {
         query.where.employeeId = Number(employeeId);
     }
     if (machineId) {
         query.where.machineId = Number(machineId);
+    }
+    if (status) {
+        query.where.status = status;
     }
 
 
@@ -88,13 +104,7 @@ module.exports.createMTask = (
     employeeId,
     machineId,
     typeOfFailureId,
-    typeOfRootCauseId,
-    rootCauseDetail,
-    operationDetails,
-    preventingRecurrence,
-    equipmentUsed,
-    additionalSuggestions,
-    image
+    note,
 ) => {
     return prisma.maintenanceTask.create({
         data: {
@@ -102,57 +112,16 @@ module.exports.createMTask = (
             employeeId: Number(employeeId),
             machineId: Number(machineId),
             typeOfFailureId: Number(typeOfFailureId),
-            typeOfRootCauseId: Number(typeOfRootCauseId),
-            rootCauseDetail,
-            operationDetails,
-            preventingRecurrence,
-            equipmentUsed,
-            additionalSuggestions,
-            image
+            note : note
         }
     })
 }
-module.exports.updateMTask = (
-    maintenanceId,
-    requestId,
-    employeeId,
-    machineId,
-    typeOfFailureId,
-    typeOfRootCauseId,
-    rootCauseDetail,
-    operationDetails,
-    preventingRecurrence,
-    equipmentUsed,
-    additionalSuggestions,
-    finishTime,
-    acceptTime,
-    isRejected,
-    rejectReason,
-    status,
-    image
-) => {
+module.exports.updateMTask = (maintenanceId,updateFields) => {
     return prisma.maintenanceTask.update({
         where: {
             id: Number(maintenanceId)
           },
-          data: {
-            requestId: Number(requestId),
-            employeeId: Number(employeeId),
-            machineId: Number(machineId),
-            typeOfFailureId: Number(typeOfFailureId),
-            typeOfRootCauseId: Number(typeOfRootCauseId),
-            rootCauseDetail,
-            operationDetails,
-            preventingRecurrence,
-            equipmentUsed,
-            additionalSuggestions,
-            finishTime,
-            acceptTime,
-            isRejected,
-            rejectReason,
-            status,
-            image
-          }
+          data: updateFields
     })
 }
 module.exports.deleteMTask = (maintenanceId) => {
@@ -162,3 +131,38 @@ module.exports.deleteMTask = (maintenanceId) => {
         }
     })
 }
+
+module.exports.getMaintenanceTaskById = (maintenanceId) => {
+    return prisma.maintenanceTask.findUnique({
+        where: {
+            id: Number(maintenanceId)
+        }
+    })
+}
+
+
+
+module.exports.findTypeOfRootCause = (typeOfFailureId,machineTypeId) => {
+    return prisma.typeOfRootCause.findMany({
+        where: {
+            typeOfFailureId: Number(typeOfFailureId),
+            machineTypeId: Number(machineTypeId)
+        },
+        select: {
+            id: true,
+            details: true,
+            typeOfFailure: {
+                select: {
+                    details: true
+                }
+            },
+            machineType: {
+                select: {
+                    details: true
+                }
+            }
+        }
+    })
+}
+
+
