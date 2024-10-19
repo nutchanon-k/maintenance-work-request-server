@@ -6,7 +6,7 @@ const { createRequestTask, updateRequestTask, deleteRequestTask, getRequestTask,
 const upload = require("../middlewares/upload");
 
 
-requestTaskRoute.get("/", authenticate, authenticate, getRequestTask)
+requestTaskRoute.get("/", authenticate, getRequestTask)
 requestTaskRoute.post("/", authenticate,upload.single('image'), createRequestTaskValidator, createRequestTask)
 requestTaskRoute.patch("/:requestId", authenticate,upload.single('image'), updateRequestTaskValidator,  updateRequestTask)
 requestTaskRoute.delete("/:requestId", authenticate, deleteRequestTask)

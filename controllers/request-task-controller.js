@@ -10,7 +10,11 @@ const getPublicId = require('../utils/getPublicId')
 module.exports.getRequestTask = async (req, res, next) => {
     try {
         const { requestId, employeeId, machineId, departmentId, status, requestTime } = req.query
-        const requestTasks = await getRTask(requestId, employeeId, machineId, departmentId, status, requestTime)
+        const role = req.user.role
+        const level = req.user.level
+        const userId = req.user.id
+        console.log("role and level", role, level, userId)
+        const requestTasks = await getRTask(role, level, userId, requestId, employeeId, machineId, departmentId, status, requestTime)
         res.status(200).json({
             message: 'Get request task success',
             data: requestTasks
@@ -24,7 +28,12 @@ module.exports.createRequestTask = async (req, res, next) => {
     try {
         const { employeeId, machineId, faultSymptoms, departmentId } = req.body
         const haveFile = !!req.file //ทำให้เป็น boolean
-
+        const role = req.user.role
+        
+        if(role !== 'requester' && role !== 'admin') {
+            return createError(403, 'Only requester and admin can create request task')
+        }
+        
         let uploadResult = {}
 
         if (haveFile) {
@@ -58,6 +67,17 @@ module.exports.updateRequestTask = async (req, res, next) => {
         const { requestId } = req.params
         const { employeeId, machineId, faultSymptoms, departmentId, status } = req.body
         const requestData = await getRTaskById(requestId)
+        const role = req.user.role
+        const level = req.user.level
+        const userId = req.user.id
+
+        if(role !== 'requester' && role !== 'admin') {
+            return createError(403, 'Only requester and admin can edit request task')
+        }
+
+        if (role !== 'admin' && requestData.employeeId !== userId && !(role === 'requester' && (level === 'manager' || level === 'leader'))) {
+            return createError(403, 'You are not authorized to edit this request task');
+        }
 
         // check request task by ID
         if (!requestData) {
@@ -111,10 +131,22 @@ module.exports.updateRequestTask = async (req, res, next) => {
 module.exports.deleteRequestTask = async (req, res, next) => {
     try {
         const { requestId } = req.params
+        const role = req.user.role
+        const level = req.user.level
+        const userId = req.user.id
 
-        const checkRequestTask = await getRTaskById(requestId)
-        if (!checkRequestTask) {
+
+        const requestData = await getRTaskById(requestId)
+
+        //role & level validate
+        if (!requestData) {
             return createError(404, 'Request task not found')
+        }
+        if(role !== 'requester' && role !== 'admin') {
+            return createError(403, 'Only requester and admin can delete request task')
+        }
+        if (role !== 'admin' && requestData.employeeId !== userId && !(role === 'requester' && (level === 'manager' || level === 'leader'))) {
+            return createError(403, 'You are not authorized to delete this request task');
         }
 
         const requestTask = await deleteRTask(requestId)
@@ -155,6 +187,14 @@ module.exports.updateRequestTaskIsAssign = async (req, res, next) => {
         const { requestId } = req.params
         const { isAssigned } = req.body
 
+        const role = req.user.role
+        const level = req.user.level
+        const userId = req.user.id
+
+        if(role === "requester" || (role === "maintenance" && level === "staff")) {
+            return createError(403, 'Only maintenance leader and admin can assign request task')
+        }
+
         const checkRequestTask = await getRTaskById(requestId)
         if (!checkRequestTask) {
             return createError(404, 'Request task not found')
@@ -173,6 +213,13 @@ module.exports.updateRequestStatus = async (req, res, next) => {
     try {
         const { requestId } = req.params
         const { status } = req.body
+        const role = req.user.role
+        const level = req.user.level
+        const userId = req.user.id
+
+        if(role !== "requester" && role !== "admin") {
+            return createError(403, 'Only requester and admin can change request task status')
+        }
         
         const checkRequestTask = await getRTaskById(requestId)
         if(!checkRequestTask){

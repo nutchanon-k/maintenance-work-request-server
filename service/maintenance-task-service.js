@@ -1,13 +1,20 @@
+const e = require('express');
 const prisma = require('../models/prisma')
 
-module.exports.getListMaintenanceTask = (requestId, id, employeeId, machineId, status) => {
+module.exports.getListMaintenanceTask = (requestId, id, employeeId, machineId, status, requesterUserId) => {
     const query = {
-        where: {},
+        where: {
+
+        },
+        orderBy: {
+            id: 'desc'
+        },
         select: {
             id: true,
             requestId: true,
             requestTask: {
                 select: {
+                    employeeId: true,
                     employee: {
                         select: {
                             firstName: true,
@@ -95,8 +102,12 @@ module.exports.getListMaintenanceTask = (requestId, id, employeeId, machineId, s
     if (status) {
         query.where.status = status;
     }
-
-
+    if (requesterUserId) {
+        console.log(requesterUserId)
+        query.where.requestTask = {
+            employeeId: Number(requesterUserId)
+        }
+    }
     return prisma.maintenanceTask.findMany(query)
 }
 module.exports.createMTask = (
@@ -136,7 +147,85 @@ module.exports.getMaintenanceTaskById = (maintenanceId) => {
     return prisma.maintenanceTask.findUnique({
         where: {
             id: Number(maintenanceId)
+        },
+        select: {
+            id: true,
+            requestId: true,
+            requestTask: {
+                select: {
+                    employeeId: true,
+                    employee: {
+                        select: {
+                            firstName: true,
+                            lastName: true,
+                            picture: true
+                        }
+                    },
+                    machine: {
+                        select: {
+                            name: true,
+                            location: {
+                                select: {
+                                    name: true
+                                }
+                            },
+                            machineTypeId: true,
+                            machineType: {
+                                select: {
+                                    details: true
+                                }
+                            }
+                        }
+                    },
+                    faultSymptoms: true,
+                    department: {
+                        select: {
+                            name: true
+                        }
+                    },
+                    requestTime: true,
+                    updatedTime : true,
+                    status: true,
+                    image: true,
+                    isAssigned: true
+                }
+            },
+            employeeId: true,
+            employee: {
+                select: {
+                    firstName: true,
+                    lastName: true,
+                    picture: true,
+                }
+            },
+            machineId: true,
+            typeOfFailureId: true,
+            typeOfFailure: {
+                select: {
+                    details: true
+                }
+            },
+            typeOfRootCauseId: true,
+            typeOfRootCause: {
+                select: {
+                    details: true
+                }
+            },
+            rootCauseDetail: true,
+            operationDetails: true,
+            preventingRecurrence: true,
+            equipmentUsed: true,
+            additionalSuggestions: true,
+            startTime: true,
+            finishTime: true,
+            acceptTime: true,
+            status: true,
+            image: true,
+            note: true,
+            isRejected : true,
+            rejectReason : true
         }
+
     })
 }
 
@@ -164,5 +253,12 @@ module.exports.findTypeOfRootCause = (typeOfFailureId,machineTypeId) => {
         }
     })
 }
-
+module.exports.updateMTaskStatus = (maintenanceId,updateFields) => {
+    return prisma.maintenanceTask.update({
+        where: {
+            id: Number(maintenanceId)
+        },
+        data: updateFields
+    })
+}
 

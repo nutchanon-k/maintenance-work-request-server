@@ -4,10 +4,15 @@ const { request } = require('express');
 createError = require('../utils/create-error')
 
 
-module.exports.getRTask = (requestId, employeeId, machineId, departmentId, status, requestTime) => {
+module.exports.getRTask = (role, level, userId, requestId, employeeId, machineId, departmentId, status, requestTime) => {
     const query = {
         where: {},
-        include: {
+        orderBy: {
+            id: 'desc'
+        },
+        select: {
+            id: true,
+            employeeId: true,
             employee: {
                 select: {
                     firstName: true,
@@ -17,14 +22,27 @@ module.exports.getRTask = (requestId, employeeId, machineId, departmentId, statu
                     level: true
                 }
             },
+            machineId: true,
             machine: {
                 include: {
                     machineType: true,
                     location: true
                 },
             },
-            department: true
+            departmentId: true,
+            department: {
+                select: {
+                    name: true
+                }
+            },
+            faultSymptoms: true,
+            requestTime: true,
+            updatedTime: true,
+            image: true,
+            status: true,
+            isAssigned: true
         }
+
     };
     if (requestId) {
         query.where.id = parseInt(requestId);
@@ -45,6 +63,9 @@ module.exports.getRTask = (requestId, employeeId, machineId, departmentId, statu
         query.where.requestTime = {
             gte: new Date(requestTime)
         };
+    }
+    if((level === 'staff') && (role !== 'admin')) {
+        query.where.employeeId = parseInt(userId);
     }
 
     return prisma.requestTask.findMany(query)
@@ -147,6 +168,18 @@ module.exports.updateStatusService = (requestId, status) => {
         },
         data: {
             status
+        }
+    })
+}
+
+// for requester staff see maintenance task by employee
+module.exports.getRTaskByEmployeeId = (employeeId) => {
+    return prisma.requestTask.findMany({
+        where: {
+            employeeId: Number(employeeId)
+        },
+        select: {
+            id: true,
         }
     })
 }

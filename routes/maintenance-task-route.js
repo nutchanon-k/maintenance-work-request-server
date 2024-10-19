@@ -1,6 +1,6 @@
 const express = require("express");
 const maintenanceTaskRoute = express.Router();
-const { getMaintenanceTask, createMaintenanceTask, updateMaintenanceTask, deleteMaintenanceTask, getTypeOfRootCause } = require("../controllers/maintenance-task-controller");
+const { getMaintenanceTask, createMaintenanceTask, updateMaintenanceTask, deleteMaintenanceTask, getTypeOfRootCause, updateMaintenanceTaskStatus } = require("../controllers/maintenance-task-controller");
 const { createMaintenanceTaskValidator, updateMaintenanceTaskValidator } = require("../middlewares/validator");
 const upload = require("../middlewares/upload");
 
@@ -11,4 +11,6 @@ maintenanceTaskRoute.delete("/:maintenanceId", deleteMaintenanceTask)
 
 
 maintenanceTaskRoute.get("/data-type-of-root-cause",getTypeOfRootCause) 
+maintenanceTaskRoute.patch("/update-status/:maintenanceId", updateMaintenanceTaskStatus)
+
 module.exports = maintenanceTaskRoute

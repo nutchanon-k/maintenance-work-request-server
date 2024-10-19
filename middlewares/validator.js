@@ -132,7 +132,7 @@ const updateUserSchema = Joi.object({
     }),
   password: Joi
     .string()
-    .required()
+    .optional()
     .min(6)
     .messages({
       "string.empty": "password is required",
