@@ -9,27 +9,29 @@ const getPublicId = require('../utils/getPublicId');
 
 module.exports.getMaintenanceTask = async (req, res, next) => {
     try {
-        const { requestId, id, machineId, status } = req.query
+        const { requestId, id, machineId, status, searchText } = req.query
         const role = req.user.role
         const level = req.user.level
         const userId = req.user.id
 
+        // console.log(id)
 
-        //role validate 
-
-        //สำหรับ requester level staff ดู maintenance task ของตนเอง
-        let requesterUserID
+        let requesterUserId = ''
         if (role === 'requester' && level === 'staff') {
-            requesterUserID = userId
+            requesterUserId = userId
         }
 
-        //สำหรับ maintenance staff ดู maintenance task ของตนเอง
-        let employeeId
+        let maintenanceUserId = ''
         if (role === 'maintenance' && level === 'staff') {
-            employeeId = userId
+            maintenanceUserId = userId
         }
 
-        const maintenanceTasks = await getListMaintenanceTask(requestId, id, employeeId, machineId, status, requesterUserID)
+        console.log( "test reqID",requestId)
+        console.log("maintenanceTask ID", id )
+        console.log("requester staff ID", requesterUserId )
+        console.log("maintenance staff ID", maintenanceUserId )
+
+        const maintenanceTasks = await getListMaintenanceTask(requestId, id, machineId, status, searchText, requesterUserId,maintenanceUserId)
         res.status(200).json({ data: maintenanceTasks })
     } catch (err) {
         next(err)
@@ -293,3 +295,4 @@ module.exports.updateMaintenanceTaskStatus = async (req, res, next) => {
         next(err)
     }
 }
+

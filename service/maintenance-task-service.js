@@ -1,10 +1,9 @@
 const e = require('express');
 const prisma = require('../models/prisma')
 
-module.exports.getListMaintenanceTask = (requestId, id, employeeId, machineId, status, requesterUserId) => {
+module.exports.getListMaintenanceTask = (requestId, id, machineId, status, searchText, requesterUserId,maintenanceUserId ) => {
     const query = {
         where: {
-
         },
         orderBy: {
             id: 'desc'
@@ -25,6 +24,7 @@ module.exports.getListMaintenanceTask = (requestId, id, employeeId, machineId, s
                     machine: {
                         select: {
                             name: true,
+                            locationId: true,
                             location: {
                                 select: {
                                     name: true
@@ -90,11 +90,14 @@ module.exports.getListMaintenanceTask = (requestId, id, employeeId, machineId, s
     if (requestId) {
         query.where.requestId = Number(requestId);
     }
+    console.log("maintenance id in service",id)
     if (id) {
         query.where.id = Number(id);
     }
-    if (employeeId) {
-        query.where.employeeId = Number(employeeId);
+
+    console.log("maintenance staff id in service",maintenanceUserId)
+    if (maintenanceUserId) {
+        query.where.employeeId = Number(maintenanceUserId);
     }
     if (machineId) {
         query.where.machineId = Number(machineId);
@@ -102,6 +105,7 @@ module.exports.getListMaintenanceTask = (requestId, id, employeeId, machineId, s
     if (status) {
         query.where.status = status;
     }
+    console.log("ID requester from service",requesterUserId)
     if (requesterUserId) {
         console.log(requesterUserId)
         query.where.requestTask = {
@@ -109,7 +113,7 @@ module.exports.getListMaintenanceTask = (requestId, id, employeeId, machineId, s
         }
     }
     return prisma.maintenanceTask.findMany(query)
-}
+}                                          
 module.exports.createMTask = (
     requestId,
     employeeId,
@@ -261,4 +265,3 @@ module.exports.updateMTaskStatus = (maintenanceId,updateFields) => {
         data: updateFields
     })
 }
-
