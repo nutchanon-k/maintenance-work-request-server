@@ -265,3 +265,43 @@ module.exports.updateMTaskStatus = (maintenanceId,updateFields) => {
         data: updateFields
     })
 }
+
+
+
+
+//for chart
+module.exports.findTypeOfRootCauseForChart = async() => {
+    const typeOfRootCause =  await prisma.typeOfRootCause.findMany({
+        select: {
+            id: true,
+            details: true,
+            typeOfFailureId: true,
+            typeOfFailure: {
+                select: {
+                    details: true
+                }
+            },
+            machineTypeId: true,
+            machineType: {
+                select: {
+                    details: true
+                }
+            }
+        }
+    })
+    const  machineType = await prisma.machineType.findMany({
+        select: {
+            id: true,
+            details: true,     
+        }
+    })
+
+    const  typeOfFailure = await prisma.typeOfFailure.findMany({
+        select: {
+            id: true,
+            details: true,     
+        }
+    })
+
+    return {typeOfRootCause,machineType, typeOfFailure}
+}

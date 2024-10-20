@@ -1,6 +1,6 @@
 
 const createError = require('../utils/create-error');
-const { getListMaintenanceTask, createMTask, updateMTask, deleteMTask, findTypeOfRootCause, getMaintenanceTaskById, updateMTaskStatus } = require('../service/maintenance-task-service');
+const { getListMaintenanceTask, createMTask, updateMTask, deleteMTask, findTypeOfRootCause, getMaintenanceTaskById, updateMTaskStatus, findTypeOfRootCauseForChart } = require('../service/maintenance-task-service');
 const path = require('path')
 const fs = require('fs/promises')
 const cloudinary = require('../config/cloudinary')
@@ -290,6 +290,21 @@ module.exports.updateMaintenanceTaskStatus = async (req, res, next) => {
         res.status(200).json({
             message: `Update Maintenance Task Status Success`,
             data: maintenanceTask
+        })
+    } catch (err) {
+        next(err)
+    }
+}
+
+
+
+//for chart 
+module.exports.getMaintenanceTaskForRootCauseFailure = async (req, res, next) => {
+    try {
+        const data = await findTypeOfRootCauseForChart()
+        res.status(200).json({
+            message: `Get Type Of Root Cause Success`,
+            data: data
         })
     } catch (err) {
         next(err)
