@@ -1,5 +1,5 @@
 const express = require("express");
-const { createUser, getUsersForAssign, getLocationDepartmentData, getUserId } = require("../controllers/user-controller");
+const { createUser, getUsersForAssign, getLocationDepartmentData, getUserId, changePassword } = require("../controllers/user-controller");
 const { authenticate } = require("../middlewares/authenticate");
 const { createUserValidator, updateUserValidator } = require("../middlewares/validator");
 const { checkRoleAdmin } = require("../middlewares/check-role-admin");
@@ -17,8 +17,12 @@ userRoute.delete("/:userId", checkRoleAdmin,deleteUser )
 
 //get user by leader for assign task
 userRoute.get("/assign-users",getUsersForAssign)
-userRoute.get("/location-department-data", getLocationDepartmentData) 
-userRoute.get("/user-detail/:userId", getUserId) 
+userRoute.get("/location-department-data",checkRoleAdmin, getLocationDepartmentData) 
+userRoute.get("/user-detail/:userId",checkRoleAdmin, getUserId) 
+
+
+//for user change password
+userRoute.patch("/change-password/:userId", authenticate, changePassword)
 
 
 module.exports = userRoute

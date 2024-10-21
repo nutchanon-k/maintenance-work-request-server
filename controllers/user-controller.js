@@ -85,6 +85,24 @@ module.exports.createUser = async (req, res, next) => {
 module.exports.updateUser = async (req, res, next) => {
     try {
         const { userId } = req.params
+        const userRole = req.user.role
+        const id = req.user.id
+        const userLevel = req.user.level
+
+
+        //check user
+        const checkUser = await getUserById(Number(userId))
+        if (!checkUser) {
+            return createError(404, 'User not found')
+        }
+        
+
+        // Condition: Admin cannot update other Admins unless they are a manager
+        // But can update their own profile
+        if (userRole === 'admin' && userLevel !== 'manager' && checkUser.role === 'admin' && Number(userId) !== Number(id)) {
+            return createError(403, 'Admin cannot update another Admin unless they are a manager');
+        }
+
         const {
             firstName,
             lastName,
@@ -97,10 +115,7 @@ module.exports.updateUser = async (req, res, next) => {
             isAvailable
         } = req.body
 
-        const checkUser = await getUserById(Number(userId))
-        if (!checkUser) {
-            return createError(404, 'User not found')
-        }
+
 
         //hash password
 
@@ -156,10 +171,22 @@ module.exports.updateUser = async (req, res, next) => {
 module.exports.deleteUser = async (req, res, next) => {
     try {
         const { userId } = req.params
+        const userRole = req.user.role
+        const id = req.user.id
+        const userLevel = req.user.level
+
+        //check user
         const checkUser = await getUserById(Number(userId))
         if (!checkUser) {
             return createError(404, 'User not found')
         }
+
+        // Condition: Admin cannot update other Admins unless they are a manager
+        // But can update their own profile
+        if (userRole === 'admin' && userLevel !== 'manager' && checkUser.role === 'admin' && Number(userId) !== Number(id)) {
+            return createError(403, 'Admin cannot delete another Admin unless they are a manager');
+        }
+
         const user = await deleteUserService(Number(userId))
 
         res.status(200).json({
@@ -206,7 +233,15 @@ module.exports.getUsersForAssign = async (req, res, next) => {
                     select: {
                         name: true
                     }
+                },
+                maintenanceTasks: {
+                    where: {
+                        status: {
+                            in: ["backlog", "inProgress", "inReview"]
+                        }
+                    }
                 }
+
             }
         })
         res.status(200).json({ data: users })
@@ -241,12 +276,61 @@ module.exports.getLocationDepartmentData = async (req, res, next) => {
     }
 
 }
-
 module.exports.getUserId = async (req, res, next) => {
     try {
         const { userId } = req.params
         const user = await getUserById(Number(userId))
         res.status(200).json({ data: user })
+    } catch (err) {
+        next(err)
+    }
+}
+
+
+
+module.exports.changePassword = async (req, res, next) => {
+    try {
+        const { userId } = req.params
+        const { oldPassword, newPassword, confirmNewPassword } = req.body
+        const {id} = req.user
+
+
+        //validate user
+        if(Number(id) !== Number(userId)) {
+            return createError(403, 'You are not authorized to change password')
+        }
+
+        //check old password
+        const findPassword = await prisma.employee.findUnique({
+            where: {
+                id: Number(userId)
+            },
+            select: {
+                password: true
+            }
+        })
+        
+        const passwordIsMatch = await bcrypt.compare(oldPassword, findPassword.password)
+        
+        if(!passwordIsMatch) {
+            return createError(400, 'Old password is not correct')
+        }
+
+        //check new password
+        if(newPassword !== confirmNewPassword) {
+            return createError(400, 'New password is not match with confirm new password')
+        }
+        const hashedPassword = await bcrypt.hash(newPassword, 10)
+        const user = await prisma.employee.update({
+            where: {
+                id: Number(userId)
+            },
+            data: {
+                password: hashedPassword
+            }
+        })
+    
+        res.status(200).json({message: 'Change password success'})
     } catch (err) {
         next(err)
     }

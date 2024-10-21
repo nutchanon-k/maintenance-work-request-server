@@ -51,7 +51,7 @@ module.exports.createMaintenanceTask = async (req, res, next) => {
         const userId = req.user.id
 
         //role validate
-        if ((role === 'requester') && (role === 'maintenance' && level === 'staff')) {
+        if ((role === 'requester') || (role === 'maintenance' && level === 'staff')) {
             return createError(403, 'Only admin, maintenance leader or manager can create maintenance task')
         }
 
@@ -211,10 +211,25 @@ module.exports.updateMaintenanceTask = async (req, res, next) => {
 module.exports.deleteMaintenanceTask = async (req, res, next) => {
     try {
         const { maintenanceId } = req.params
+        const role = req.user.role
+        const level = req.user.level
+        const userId = req.user.id
+        //role validate
+        if ((role === 'requester') || (role === 'maintenance' && level === 'staff')) {
+            return createError(403, 'Only admin, maintenance leader or manager can create maintenance task')
+        }
+        
         const maintenanceData = await getMaintenanceTaskById(maintenanceId)
+
+
+
         if (!maintenanceData) {
             return createError(404, 'Maintenance task not found')
         }
+        if(maintenanceData.status === 'success') {
+            return createError(400, 'Maintenance task already success')
+        }
+
         const maintenanceTask = await deleteMTask(maintenanceId)
         res.status(200).json({
             message: `Delete Maintenance Task ID ${maintenanceId} Success`,

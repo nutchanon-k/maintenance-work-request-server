@@ -149,7 +149,6 @@ module.exports.findMachine = (machineId) => {
     return prisma.machine.findFirst(query)
 
 }
-
 module.exports.updateRTaskIsAssigned = (requestId, isAssigned) => {
     return prisma.requestTask.update({
         where: {
@@ -160,7 +159,6 @@ module.exports.updateRTaskIsAssigned = (requestId, isAssigned) => {
         }
     })
 }
-
 module.exports.updateStatusService = (requestId, status) => {
     return prisma.requestTask.update({
         where: {

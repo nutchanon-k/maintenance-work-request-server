@@ -13,7 +13,7 @@ module.exports.getRequestTask = async (req, res, next) => {
         const role = req.user.role
         const level = req.user.level
         const userId = req.user.id
-        console.log("role and level", role, level, userId)
+        // console.log("role and level", role, level, userId)
         const requestTasks = await getRTask(role, level, userId, requestId, employeeId, machineId, departmentId, status, requestTime)
         res.status(200).json({
             message: 'Get request task success',
@@ -30,7 +30,7 @@ module.exports.createRequestTask = async (req, res, next) => {
         const haveFile = !!req.file //ทำให้เป็น boolean
         const role = req.user.role
         
-        if(role !== 'requester' && role !== 'admin') {
+        if(role === 'maintenance') {
             return createError(403, 'Only requester and admin can create request task')
         }
         
@@ -71,7 +71,7 @@ module.exports.updateRequestTask = async (req, res, next) => {
         const level = req.user.level
         const userId = req.user.id
 
-        if(role !== 'requester' && role !== 'admin') {
+        if(role === 'maintenance') {
             return createError(403, 'Only requester and admin can edit request task')
         }
 
@@ -142,6 +142,9 @@ module.exports.deleteRequestTask = async (req, res, next) => {
         if (!requestData) {
             return createError(404, 'Request task not found')
         }
+        if (requestData.status === 'success') {
+            return createError(400, 'Request task already success')
+        }
         if(role !== 'requester' && role !== 'admin') {
             return createError(403, 'Only requester and admin can delete request task')
         }
@@ -165,7 +168,9 @@ module.exports.getMachine = async (req, res, next) => {
     try {
         const { machineId } = req.params
         // console.log(machineId)
-
+        if (isNaN(Number(machineId))) {
+            return createError(400, 'Machine id must be a number')
+        }
         const machines = await findMachine(machineId)
         console.log(machines)
 
@@ -201,14 +206,13 @@ module.exports.updateRequestTaskIsAssign = async (req, res, next) => {
         }
         const requestTask = await updateRTaskIsAssigned(requestId,isAssigned)
         res.status(200).json({
-            message: 'Update isAssigned in request task success',
+            message: 'Assigned request task success',
             data: requestTask
         })
     } catch (err) {
         next(err)
     }
 }
-
 module.exports.updateRequestStatus = async (req, res, next) => {
     try {
         const { requestId } = req.params
