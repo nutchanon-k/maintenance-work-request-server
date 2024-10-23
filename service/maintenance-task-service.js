@@ -267,7 +267,14 @@ module.exports.updateMTaskStatus = (maintenanceId,updateFields) => {
 }
 
 
-
+//for validate 
+module.exports.findMachineById = (machineId) => {
+    return prisma.machine.findUnique({
+        where: {
+            id: Number(machineId)
+        },
+    })
+}
 
 //for chart
 module.exports.findTypeOfRootCauseForChart = async() => {

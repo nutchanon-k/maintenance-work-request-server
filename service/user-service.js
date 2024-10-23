@@ -85,3 +85,15 @@ module.exports.deleteUserService = (userId) => {
         }
     })
 }
+
+
+module.exports.changePasswordService = (id, password) => {
+    return prisma.employee.update({
+        where: {
+            id: Number(id)
+        },
+        data: {
+            password: password
+        }
+    })
+} 

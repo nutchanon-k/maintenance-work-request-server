@@ -69,7 +69,7 @@ model RequestTask {
   employee         Employee          @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   machineId        Int               @map("machine_id")
   machine          Machine           @relation(fields: [machineId], references: [id], onDelete: Cascade)
-  faultSymptoms    String            @map("fault_symptoms")
+  faultSymptoms    String            @map("fault_symptoms") @db.LongText
   departmentId     Int               @map("department_id")
   department       Department        @relation(fields: [departmentId], references: [id], onDelete: Cascade)
   requestTime      DateTime          @default(now()) @map("request_time")
@@ -92,19 +92,19 @@ model MaintenanceTask {
   typeOfFailure         TypeOfFailure     @relation(fields: [typeOfFailureId], references: [id], onDelete: Cascade)
   typeOfRootCauseId     Int?              @map("type_of_root_cause")
   typeOfRootCause       TypeOfRootCause?  @relation(fields: [typeOfRootCauseId], references: [id], onDelete: Cascade)
-  rootCauseDetail       String?           @map("root_cause_detail")
-  operationDetails      String?           @map("operation_details")
-  preventingRecurrence  String?           @map("preventing_recurrence")
+  rootCauseDetail       String?           @map("root_cause_detail") @db.LongText
+  operationDetails      String?           @map("operation_details") @db.LongText
+  preventingRecurrence  String?           @map("preventing_recurrence") @db.LongText
   equipmentUsed         String?           @map("equipment_used")
-  additionalSuggestions String?           @map("additional_suggestions")
+  additionalSuggestions String?           @map("additional_suggestions") @db.LongText
   startTime             DateTime          @default(now()) @map("start_time")
   finishTime            DateTime?         @map("finish_time")
   acceptTime            DateTime?         @map("accept_time")
   status                MaintenanceStatus @default(backlog)
   isRejected            Boolean           @default(false) @map("is_rejected")
-  rejectReason          String?           @map("reject_reason")
+  rejectReason          String?           @map("reject_reason") @db.LongText
   image                 String?
-  note                  String?           
+  note                  String?           @db.LongText
 }
 
 // model RequestImage {

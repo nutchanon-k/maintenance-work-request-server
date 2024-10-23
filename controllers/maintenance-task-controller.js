@@ -6,7 +6,7 @@ const fs = require('fs/promises')
 const cloudinary = require('../config/cloudinary')
 const getPublicId = require('../utils/getPublicId');
 
-
+//main function CRUD
 module.exports.getMaintenanceTask = async (req, res, next) => {
     try {
         const { requestId, id, machineId, status, searchText } = req.query
@@ -14,8 +14,32 @@ module.exports.getMaintenanceTask = async (req, res, next) => {
         const level = req.user.level
         const userId = req.user.id
 
-        // console.log(id)
+        // value validation 
+        if (requestId) {
+            if (isNaN(Number(requestId))) {
+                return createError(400, 'Request id must be a number')
+            }
+        }
+        if (id) {
+            if (isNaN(Number(id))) {
+                return createError(400, 'Maintenance task id must be a number')
+            }
+        }
+        if (machineId) {
+            if (isNaN(Number(machineId))) {
+                return createError(400, 'Machine id must be a number')
+            }
+        }
+        if (status) {
+            if (typeof status !== 'string') {
+                return createError(400, 'Status must be a string')
+            }
+            if (!['backlog', 'inProgress','inReview', 'success'].includes(status)) {
+                return createError(400, 'Status must be either backlog, inProgress, inReview or success')
+            }
+        }
 
+        // role validation for limit data to requester and maintenance
         let requesterUserId = ''
         if (role === 'requester' && level === 'staff') {
             requesterUserId = userId
@@ -26,10 +50,11 @@ module.exports.getMaintenanceTask = async (req, res, next) => {
             maintenanceUserId = userId
         }
 
-        console.log( "test reqID",requestId)
-        console.log("maintenanceTask ID", id )
-        console.log("requester staff ID", requesterUserId )
-        console.log("maintenance staff ID", maintenanceUserId )
+        
+        // console.log( "test reqID",requestId)
+        // console.log("maintenanceTask ID", id )
+        // console.log("requester staff ID", requesterUserId )
+        // console.log("maintenance staff ID", maintenanceUserId )
 
         const maintenanceTasks = await getListMaintenanceTask(requestId, id, machineId, status, searchText, requesterUserId,maintenanceUserId)
         res.status(200).json({ data: maintenanceTasks })

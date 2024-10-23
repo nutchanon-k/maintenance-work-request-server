@@ -1,7 +1,7 @@
 # Maintenance Work Request
 ---
 ## env guide
-PORT = 5000
+PORT = 8000
 
 DATABASE = "mysql://u:pw@localhost:3306/maintenance_work_request"
 
@@ -13,36 +13,51 @@ CLOUDINARY_API_SECRET
 
 
 ## Authen path
-|method |path |authen | params | query | role | level | body |
-|:----- |:--- |:----:  |:------ |:----- |:---- |:---- |:---- |
-|post|/auth/login|-|-|-|-|-|{ email, password }
-|get|/auth/me|y|-|-|-|-|-|
+
+| Method | Path                    | Auth Required | Params | Query | Role | Level | Body                          |
+|--------|-------------------------|:-------------:|--------|-------|------|-------|-------------------------------|
+| POST   | /auth/login             |       -       |   -    |   -   |   -  |   -   | { email, password }           |
+| GET    | /auth/me                |       y       |   -    |   -   |   -  |   -   | -                             |
+| POST   | /auth/forgot-password   |       -       |   -    |   -   |   -  |   -   | { email }                     |
+| PATCH  | /auth/reset-password    |       y       |   -    |   -   |   -  |   -   | { password, confirmPassword } |
 
 ## User path
-|method |path |authen | params | query | role | level | body |
-|:----- |:--- |:----:  |:------ |:----- |:---- |:---- |:---- |
-|get|/user/|y|-|-|admin|-|-|
-|post|/user/|y|y|-|admin|-|{firstName, lastName, email, password, confirmPassword, picture?, locationId, departmentId, role, level}
-|patch|/user/:userId|y|y|-|admin|-|{firstName, lastName, email, password, confirmPassword, picture?, locationId, departmentId, role, level}
-|delete|/user/:userId|y|y|-|admin|-|-|
-|get|/user/assign-users|y|-|y|admin, maintenance|manager, leader|-|
+
+| Method | Path                    | Auth Required | Params | Query | Role            | Level           | Body                                                                                   |
+|--------|-------------------------|:-------------:|--------|-------|-----------------|-----------------|----------------------------------------------------------------------------------------|
+| GET    | /user/                  |       y       |   -    |   -   | admin           | -               | -                                                                                      |
+| POST   | /user/                  |       y       |   y    |   -   | admin           | -               | { firstName, lastName, email, password, confirmPassword, picture?, locationId, departmentId, role, level } |
+| PATCH  | /user/:userId           |       y       |   y    |   -   | admin           | -               | { firstName, lastName, email, password, confirmPassword, picture?, locationId, departmentId, role, level } |
+| DELETE | /user/:userId           |       y       |   y    |   -   | admin           | -               | -                                                                                      |
+| GET    | /user/assign-users      |       y       |   -    |   y   | admin, maintenance | manager, leader | -                                                                                      |
+| GET    | /user/location-department-data      |       y       |   -    |   -   | admin | -   | -
+| GET    | /user/user-detail/:userId     |       y       |   y    |   -   | admin | -   | -
+| PATCH  | /user//change-password/:userId    |       y       |   y    |   -   | admin | -   | {oldPassword, newPassword, confirmNewPassword}
 
 ## Request task path
-|method |path |authen | params | query | role | level | body |
-|:----- |:--- |:----:  |:------ |:----- |:---- |:---- |:---- |
-|get|/request-task/|y|-|y|-|-|-|
-|post|/request-task/|y|-|-|-|-|{employeeId, machineId, faultSymptoms, departmentId,images }
-|patch|/request-task/:requestId|y|y|-|-|-|{employeeId, machineId, faultSymptoms, departmentId,images,status}
-|delete|/request-task/:requestId|y|y|-|-|-|-|
 
+| Method | Path                                         | Auth Required | Params | Query | Role                  | Level | Body                                                   |
+|--------|----------------------------------------------|:-------------:|--------|-------|-----------------------|-------|--------------------------------------------------------|
+| GET    | /request-task/                               |       y       |   -    |   y   |   -                   |   -   | -                                                      |
+| POST   | /request-task/                               |       y       |   -    |   -   |   admin , requester  |   -   | { employeeId, machineId, faultSymptoms, departmentId, images }  |
+| PATCH  | /request-task/:requestId                     |       y       |   y    |   -   |   admin , requester  |   -   | { employeeId, machineId, faultSymptoms, departmentId, images, status }  |
+| DELETE | /request-task/:requestId                     |       y       |   y    |   -   |   admin , requester  |   -   | -                                                      |
+| GET    | /request-task/data-machine/:machineId        |       y       |   y    |   -   |   -                   |   -   | -                                                      |
+| PATCH  | /request-task/isAssigned/:requestId          |       y       |   y    |   -   | admin , maintenance  |   leader , manager   | { isAssigned }-                                                      |
+| PATCH  | /request-task/update-status/:requestId       |       y       |   y    |   -   |   admin , requester  |   -   | { status }                                                      |
 
 ## Maintenance task path
-|method |path |authen | params | query | role | level | body |
-|:----- |:--- |:----:  |:------ |:----- |:---- |:---- |:---- |
-|get|/maintenance-task/|y|-|y|-|-|-|
-|post|/maintenance-task/|y|-|-|admin, maintenance|leader, manager|{requestId, machineId, employeeId, typeOfFailureId, typeOfRootCauseId, rootCauseDetail?, operationDetails?, preventingRecurrence? equipmentUsed?, additionalSuggestions?, images?}
-|patch|/maintenance-task/:maintenanceId|y|y|-|admin, maintenance, requester(for change status)|-|{requestId, machineId, employeeId, typeOfFailureId, typeOfRootCauseId, rootCauseDetail?, operationDetails?, preventingRecurrence? equipmentUsed?, additionalSuggestions?, finishTime?, acceptTime?, status, isRejected, images? }
-|delete|/maintenance-task/:maintenanceId|y|y|-|admin, maintenance|leader, manager|-|
+
+| Method | Path                                  | Auth Required | Params | Query | Role                  | Level                  | Body                                                                                                                   |
+|--------|---------------------------------------|:-------------:|--------|-------|-----------------------|------------------------|------------------------------------------------------------------------------------------------------------------------|
+| GET    | /maintenance-task/                    |       y       |   -    |   y   |   -                   |   -                    | -                                                                                                                      |
+| POST   | /maintenance-task/                    |       y       |   -    |   -   | admin, maintenance     | leader, manager         | { requestId, machineId, employeeId, typeOfFailureId} |
+| PATCH  | /maintenance-task/:maintenanceId      |       y       |   y    |   -   | admin, maintenance, requester | - | { requestId, machineId, employeeId, typeOfFailureId, typeOfRootCauseId, rootCauseDetail?, operationDetails?, preventingRecurrence?, equipmentUsed?, additionalSuggestions?, finishTime?, acceptTime?, status, isRejected, images? } |
+| DELETE | /maintenance-task/:maintenanceId      |       y       |   y    |   -   | admin, maintenance     | leader, manager         | -                                                                                                                      |
+| GET | /data-type-of-root-cause                 |       y       |   -    |   -   |   -                    | -         | -                                                                                                                      |
+|PATCH| /update-status/:maintenanceId            |       y       |   y    |   -   |   admin, requester     | -         |  { status, acceptTime, isRejected, rejectReason }-                                                                                                                      |
+|GET  | /data-root-cause-failure                 |       y       |   y    |   -   |   -                    | -         |   -                                                                                                                      |
+
 
 
 ## Note

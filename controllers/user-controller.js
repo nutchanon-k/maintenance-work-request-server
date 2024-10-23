@@ -8,6 +8,7 @@ const cloudinary = require('../config/cloudinary')
 const getPublicId = require('../utils/getPublicId')
 
 
+
 module.exports.getAllUsers = async (req, res, next) => {
     try {
         const users = await getAllUsersService()
@@ -280,6 +281,10 @@ module.exports.getUserId = async (req, res, next) => {
     try {
         const { userId } = req.params
         const user = await getUserById(Number(userId))
+
+        if (!user) {
+            return createError(404, 'User not found')
+        }
         res.status(200).json({ data: user })
     } catch (err) {
         next(err)
@@ -321,14 +326,7 @@ module.exports.changePassword = async (req, res, next) => {
             return createError(400, 'New password is not match with confirm new password')
         }
         const hashedPassword = await bcrypt.hash(newPassword, 10)
-        const user = await prisma.employee.update({
-            where: {
-                id: Number(userId)
-            },
-            data: {
-                password: hashedPassword
-            }
-        })
+        const user = await changePasswordService(id, hashedPassword)
     
         res.status(200).json({message: 'Change password success'})
     } catch (err) {
